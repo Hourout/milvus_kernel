@@ -99,7 +99,7 @@ class MilvusKernel(Kernel):
                                     'SUBSTRUCTURE': MetricType.SUBSTRUCTURE,
                                     'SUPERSTRUCTURE': MetricType.SUPERSTRUCTURE,
                                     'TANIMOTO': MetricType.TANIMOTO}
-                                param['metric_type'] = metric_type_dict[param_list[1].strip()]
+                                param['metric_type'] = metric_type_dict[param_list[1].strip().replace("'", '')]
                         output = self.engine.create_collection(param).message
                     elif l.startswith('drop collection '):
                         if not self.engine:
@@ -140,7 +140,7 @@ class MilvusKernel(Kernel):
                                     'IVF_SQ8': IndexType.IVF_SQ8,
                                     'IVF_SQ8H': IndexType.IVF_SQ8H,
                                     'RNSG': IndexType.RNSG}
-                                param['index_type'] = index_type_dict[param_list[1].strip()]
+                                param['index_type'] = index_type_dict[param_list[1].strip().replace("'", '')]
                         output = self.engine.create_index(collection_name=v.split(' where ')[0][12:].strip(),
                                                           params=param).message
                     elif l.startswith('drop index '):
