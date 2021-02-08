@@ -56,7 +56,7 @@ class MilvusKernel(Kernel):
                     elif l.startswith('list collections'):
                         output = str(self.engine.list_collections()[1])
                     elif l.startswith('create collection '):
-                        param = {'collection_name':sql.split(' ')[2]}
+                        param = {'collection_name':v.split('where')[0][17:].strip()}
                         for i in v.split(' where ')[1].split(' and '):
                             param_list = i.split('=')
                             if param_list[0].strip()=='dimension':
@@ -77,6 +77,12 @@ class MilvusKernel(Kernel):
                         output = str(self.engine.create_collection(param))
                     elif l.startswith('drop collection '):
                         output = str(self.engine.drop_collection(collection_name=v[16:].strip()))
+                    elif l.startswith('create partition '):
+                        output = str(self.engine.create_partition(collection_name=v.split('where')[0][17:].strip(),
+                                                                  partition_tag=v.split('where')[1].split('=')[1].strip()))
+                    elif l.startswith('drop partition '):
+                        output = str(self.engine.drop_partition(collection_name=v.split('where')[0][15:].strip(),
+                                                                partition_tag=v.split('where')[1].split('=')[1].strip()))
 #                     else:
 #                         if self.engine:
 #                             if l.startswith('select ') and ' limit ' not in l:
