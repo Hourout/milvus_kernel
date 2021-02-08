@@ -39,6 +39,7 @@ class MilvusKernel(Kernel):
 
     def do_execute(self, code, silent, store_history=True, user_expressions=None, allow_stdin=False):
         self.silent = silent
+        message = 'Unable to connect to Milvus server. Check that the server is running.'
         output = ''
         if not code.strip():
             return self.ok()
@@ -49,13 +50,16 @@ class MilvusKernel(Kernel):
                 l = v.lower()
                 if len(l)>0:
                     if l.startswith('milvus://'):
-                        if l.count('@')>1:
-                            self.output("Connection failed, The Milvus address cannot have two '@'.")
-                        else:
-                            self.engine = Milvus(uri=f'tcp://{v[9:]}')
+                        self.engine = Milvus(uri=f'tcp://{v[9:]}')
                     elif l.startswith('list collections'):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
                         output = str(self.engine.list_collections()[1])
                     elif l.startswith('create collection '):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
                         param = {'collection_name':v.split('where')[0][17:].strip()}
                         for i in v.split(' where ')[1].split(' and '):
                             param_list = i.split('=')
@@ -74,23 +78,29 @@ class MilvusKernel(Kernel):
                                     'SUPERSTRUCTURE': MetricType.SUPERSTRUCTURE,
                                     'TANIMOTO': MetricType.TANIMOTO}
                                 param['metric_type'] = metric_type_dict[param_list[1].strip()]
-                        output = str(self.engine.create_collection(param))
+                        output = self.engine.create_collection(param).message
                     elif l.startswith('drop collection '):
-                        output = str(self.engine.drop_collection(collection_name=v[16:].strip()))
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
+                        output = self.engine.drop_collection(collection_name=v[15:].strip()).message
                     elif l.startswith('create partition '):
-                        output = str(self.engine.create_partition(collection_name=v.split('where')[0][17:].strip(),
-                                                                  partition_tag=v.split('where')[1].split('=')[1].strip()))
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
+                        output = self.engine.create_partition(collection_name=v.split('where')[0][16:].strip(),
+                                                              partition_tag=v.split('where')[1].split('=')[1].strip()).message
                     elif l.startswith('drop partition '):
-                        output = str(self.engine.drop_partition(collection_name=v.split('where')[0][15:].strip(),
-                                                                partition_tag=v.split('where')[1].split('=')[1].strip()))
-#                     else:
-#                         if self.engine:
-#                             if l.startswith('select ') and ' limit ' not in l:
-#                                 output = pd.read_sql(l+' limit 1000', self.engine).to_html()
-#                             else:
-#                                 output = pd.read_sql(l, self.engine).to_html()
-#                         else:
-#                             output = 'Unable to connect to Milvus server. Check that the server is running.'
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
+                        output = self.engine.drop_partition(collection_name=v.split('where')[0][14:].strip(),
+                                                            partition_tag=v.split('where')[1].split('=')[1].strip()).message
+                    elif l.startswith('list partitions '):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
+                        output = str(self.engine.list_partitions(collection_name=v[15:].strip()))
             self.output(output)
             return self.ok()
         except Exception as msg:
