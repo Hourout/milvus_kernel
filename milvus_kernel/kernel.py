@@ -55,17 +55,17 @@ class MilvusKernel(Kernel):
                             self.engine = Milvus(uri=f'tcp://{v[9:]}')
                     elif l.startswith('list collections'):
                         output = self.engine.list_collections()[1]
-                    elif l.startswith('create collection '):
-                        v.split(' ')[2]
+#                     elif l.startswith('create collection '):
+#                         v.split(' ')[2]
                         
-                    else:
-                        if self.engine:
-                            if l.startswith('select ') and ' limit ' not in l:
-                                output = pd.read_sql(l+' limit 1000', self.engine).to_html()
-                            else:
-                                output = pd.read_sql(l, self.engine).to_html()
-                        else:
-                            output = 'Unable to connect to Milvus server. Check that the server is running.'
+#                     else:
+#                         if self.engine:
+#                             if l.startswith('select ') and ' limit ' not in l:
+#                                 output = pd.read_sql(l+' limit 1000', self.engine).to_html()
+#                             else:
+#                                 output = pd.read_sql(l, self.engine).to_html()
+#                         else:
+#                             output = 'Unable to connect to Milvus server. Check that the server is running.'
             self.output(output)
             return self.ok()
         except Exception as msg:
