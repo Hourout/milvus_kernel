@@ -54,7 +54,7 @@ class MilvusKernel(Kernel):
                         else:
                             self.engine = Milvus(uri=f'tcp://{v[9:]}')
                     elif l.startswith('list collections'):
-                        output = self.engine.list_collections()[1]
+                        output = str(self.engine.list_collections()[1])
 #                     elif l.startswith('create collection '):
 #                         v.split(' ')[2]
                         
