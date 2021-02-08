@@ -125,24 +125,24 @@ class MilvusKernel(Kernel):
                         output = str(self.engine.list_partitions(collection_name=v[15:].strip())[1])
                     elif l.startswith('create index '):
                         param = {}
-                        for i in sql.split(' where ')[1].split(' and '):
+                        for i in v.split(' where ')[1].split(' and '):
                             param_list = i.split('=')
                             if param_list[0].strip()=='nlist':
                                 param['nlist'] = int(param_list[1].strip())
                             elif param_list[0].strip()=='index_type':
                                 index_type_dict = {
-                                    'IVFLAT':IndexType.IVFLAT,
-                                    'ANNOY':IndexType.ANNOY,
-                                    'FLAT':IndexType.FLAT,
-                                    'HNSW':IndexType.HNSW,
-                                    'INVALID':IndexType.INVALID,
-                                    'IVF_PQ':IndexType.IVF_PQ,
-                                    'IVF_SQ8':IndexType.IVF_SQ8,
-                                    'IVF_SQ8H':IndexType.IVF_SQ8H,
-                                    'RNSG':IndexType.RNSG}
+                                    'IVFLAT': IndexType.IVFLAT,
+                                    'ANNOY': IndexType.ANNOY,
+                                    'FLAT': IndexType.FLAT,
+                                    'HNSW': IndexType.HNSW,
+                                    'INVALID': IndexType.INVALID,
+                                    'IVF_PQ': IndexType.IVF_PQ,
+                                    'IVF_SQ8': IndexType.IVF_SQ8,
+                                    'IVF_SQ8H': IndexType.IVF_SQ8H,
+                                    'RNSG': IndexType.RNSG}
                                 param['index_type'] = index_type_dict[param_list[1].strip()]
                         output = self.engine.create_index(collection_name=v.split(' where ')[0][:12],
-                                                          params=param)).message
+                                                          params=param).message
                     elif l.startswith('drop index '):
                         output = self.engine.drop_index(collection_name=v[10:].strip()).message
             self.output(output)
