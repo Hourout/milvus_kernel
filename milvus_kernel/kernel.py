@@ -141,7 +141,7 @@ class MilvusKernel(Kernel):
                                     'IVF_SQ8H': IndexType.IVF_SQ8H,
                                     'RNSG': IndexType.RNSG}
                                 param['index_type'] = index_type_dict[param_list[1].strip()]
-                        output = self.engine.create_index(collection_name=v.split(' where ')[0][:12],
+                        output = self.engine.create_index(collection_name=v.split(' where ')[0][12:],
                                                           params=param).message
                     elif l.startswith('drop index '):
                         output = self.engine.drop_index(collection_name=v[10:].strip()).message
