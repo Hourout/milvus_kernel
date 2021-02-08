@@ -55,9 +55,28 @@ class MilvusKernel(Kernel):
                             self.engine = Milvus(uri=f'tcp://{v[9:]}')
                     elif l.startswith('list collections'):
                         output = str(self.engine.list_collections()[1])
-#                     elif l.startswith('create collection '):
-#                         v.split(' ')[2]
-                        
+                    elif l.startswith('create collection '):
+                        param = {'collection_name':sql.split(' ')[2]}
+                        for i in v.split(' where ')[1].split(' and '):
+                            param_list = i.split('=')
+                            if param_list[0].strip()=='dimension':
+                                param['dimension'] = int(param_list[1].strip())
+                            elif param_list[0].strip()=='index_file_size':
+                                param['index_file_size'] = int(param_list[1].strip())
+                            elif param_list[0].strip()=='metric_type':
+                                metric_type_dict = {
+                                    'HAMMING': MetricType.HAMMING,
+                                    'INVALID': MetricType.INVALID,
+                                    'IP': MetricType.IP,
+                                    'JACCARD': MetricType.JACCARD,
+                                    'L2': MetricType.L2,
+                                    'SUBSTRUCTURE': MetricType.SUBSTRUCTURE,
+                                    'SUPERSTRUCTURE': MetricType.SUPERSTRUCTURE,
+                                    'TANIMOTO': MetricType.TANIMOTO}
+                                param['metric_type'] = metric_type_dict[param_list[1].strip()]
+                        output = str(self.engine.create_collection(param))
+                    elif l.startswith('drop collection '):
+                        output = str(self.engine.drop_collection(collection_name=v[16:].strip()))
 #                     else:
 #                         if self.engine:
 #                             if l.startswith('select ') and ' limit ' not in l:
