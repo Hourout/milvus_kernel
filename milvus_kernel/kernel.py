@@ -51,6 +51,28 @@ class MilvusKernel(Kernel):
                 if len(l)>0:
                     if l.startswith('milvus://'):
                         self.engine = Milvus(uri=f'tcp://{v[9:]}')
+                    elif l.startswith('help'):
+                        output = pd.DataFrame(
+                            {'description':[
+                                'Create a collection',
+                                'Drop a collection',
+                                'Show all collections',
+                                'Create a partition',
+                                'Drop a partition',
+                                'Show all partitions in a collection',
+                                'Create an index',
+                                'Removes an index',
+                            ],
+                             'milvus sql':[
+                                 'create collection test01 where dimension=128 and index_file_size=1024 and metric_type=L2',
+                                 'drop collection test01',
+                                 'list collections',
+                                 'create partition test01 where partition_tag=tag01',
+                                 'drop partition test01 where partition_tag=tag01',
+                                 'list partitions test01',
+                                 'create index test01 where index_type=FLAT and nlist=4096',
+                                 'drop index test01',
+                             ]}).to_html()
                     elif l.startswith('list collections'):
                         if not self.engine:
                             self.output(message)
@@ -100,7 +122,29 @@ class MilvusKernel(Kernel):
                         if not self.engine:
                             self.output(message)
                             return self.ok()
-                        output = str(self.engine.list_partitions(collection_name=v[15:].strip()))
+                        output = str(self.engine.list_partitions(collection_name=v[15:].strip())[1])
+                    elif l.startswith('create index '):
+                        param = {}
+                        for i in sql.split(' where ')[1].split(' and '):
+                            param_list = i.split('=')
+                            if param_list[0].strip()=='nlist':
+                                param['nlist'] = int(param_list[1].strip())
+                            elif param_list[0].strip()=='index_type':
+                                index_type_dict = {
+                                    'IVFLAT':IndexType.IVFLAT,
+                                    'ANNOY':IndexType.ANNOY,
+                                    'FLAT':IndexType.FLAT,
+                                    'HNSW':IndexType.HNSW,
+                                    'INVALID':IndexType.INVALID,
+                                    'IVF_PQ':IndexType.IVF_PQ,
+                                    'IVF_SQ8':IndexType.IVF_SQ8,
+                                    'IVF_SQ8H':IndexType.IVF_SQ8H,
+                                    'RNSG':IndexType.RNSG}
+                                param['index_type'] = index_type_dict[param_list[1].strip()]
+                        output = self.engine.create_index(collection_name=v.split(' where ')[0][:12],
+                                                          params=param)).message
+                    elif l.startswith('drop index '):
+                        output = self.engine.drop_index(collection_name=v[10:].strip()).message
             self.output(output)
             return self.ok()
         except Exception as msg:
