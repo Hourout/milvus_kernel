@@ -5,7 +5,7 @@ Milvus Kernel for Jupyter
 
 ![PyPI version](https://img.shields.io/pypi/pyversions/milvus_kernel.svg)
 ![Github license](https://img.shields.io/github/license/Hourout/milvus_kernel.svg)
-[![PyPI](https://img.shields.io/pypi/v/mysql_kernel.svg)](https://pypi.python.org/pypi/milvus_kernel)
+[![PyPI](https://img.shields.io/pypi/v/milvus_kernel.svg)](https://pypi.python.org/pypi/milvus_kernel)
 ![PyPI format](https://img.shields.io/pypi/format/milvus_kernel.svg)
 ![contributors](https://img.shields.io/github/contributors/Hourout/milvus_kernel)
 ![downloads](https://img.shields.io/pypi/dm/milvus_kernel.svg)
@@ -72,6 +72,6 @@ jupyter notebook
 ## Quote 
 kernel logo
 
-<img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fk.kakaocdn.net%2Fdn%2FyZrl5%2FbtqwEwV2HHb%2Fd8u9PLWcIxXLJ8BkqvV881%2Fimg.jpg" width = "32" height = "32" />
+<img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9tbWJpei5xcGljLmNuL21tYml6X3BuZy9NcWdBOFlsZ2VoNHozS05uUHVuaWNVNTBnTTROVlE0U0RJVkNHcks4enFoc1FPRUdtMGtjZFBoamxiZ01zTE5wM0NUNkp5Z1M0aWNlazZHY2Q2SlhTd05BLzY0MA?x-oss-process=image/format,png" width = "32" height = "32" />
 
-- https://jeongw00.tistory.com/203
+- https://blog.csdn.net/weixin_44839084/article/details/108070675
