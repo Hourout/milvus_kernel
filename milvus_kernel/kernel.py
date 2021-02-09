@@ -145,6 +145,11 @@ class MilvusKernel(Kernel):
                                                           params=param).message
                     elif l.startswith('drop index '):
                         output = self.engine.drop_index(collection_name=v[10:].strip()).message
+                    elif l.startswith('compact '):
+                        output = self.engine.compact(collection_name=v[7:].strip()).message
+                    elif l.startswith('flush '):
+                        collection_list = [i.strip() for i in v[7:].strip().split(',') if len(i.strip())>0]
+                        output = self.engine.compact(collection_name_array=collection_list).message
             self.output(output)
             return self.ok()
         except Exception as msg:
