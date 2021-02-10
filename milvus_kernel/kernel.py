@@ -1,5 +1,5 @@
 import pandas as pd
-from milvus import Milvus, IndexType, MetricType, Status
+from milvus import Milvus, IndexType, MetricType
 from ipykernel.kernelbase import Kernel
 
 
@@ -137,6 +137,9 @@ class MilvusKernel(Kernel):
                         output = self.engine.list_partitions(collection_name=v[15:].strip())[1]
                         output = pd.DataFrame([[i.collection_name, i.tag] for i in output], columns=['collections', 'tag']).to_html()
                     elif l.startswith('create index '):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
                         param = {}
                         for i in v.split(' where ')[1].split(' and '):
                             param_list = i.split('=')
@@ -156,13 +159,25 @@ class MilvusKernel(Kernel):
                                 param['index_type'] = index_type_dict[param_list[1].strip().replace("'", '')]
                         output = self.engine.create_index(collection_name=v.split(' where ')[0][12:].strip(), params=param).message
                     elif l.startswith('drop index '):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
                         output = self.engine.drop_index(collection_name=v[10:].strip()).message
                     elif l.startswith('compact '):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
                         output = self.engine.compact(collection_name=v[7:].strip()).message
                     elif l.startswith('flush '):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
                         collection_list = [i.strip() for i in v[7:].strip().split(',') if len(i.strip())>0]
                         output = self.engine.compact(collection_name_array=collection_list).message
                     elif l.startswith('select ') and ' where ' in l:
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
                         partition_tags = None
                         params = None
                         for i in v.split(' where ')[1].split(' and '):
@@ -180,9 +195,15 @@ class MilvusKernel(Kernel):
                                                     partition_tags=partition_tags,
                                                     params=params)
                     elif l.startswith('delete '):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
                         output = self.engine.delete_entity_by_id(collection_name=v.split(' by ')[0][6:].strip(),
                                                                  id_array=[int(i.strip()) for i in v.split('=')[1].split(',') if len(i.strip())>0]).message
                     elif l.startswith('insert '):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
                         collection_name = v.split(' from ')[1].split(' ')[0].strip() if ' where ' in l or ' by ' in l else v.split(' from ')[1].strip()
                         ids = None
                         partition_tag = None
@@ -200,6 +221,9 @@ class MilvusKernel(Kernel):
                         _, output = self.engine.insert(collection_name=collection_name, records=records, ids=ids, partition_tag=partition_tag)
                         output = pd.DataFrame(output, columns=['inserted_vector_ids']).to_html()
                     elif l.startswith('select ') and ' by ' in l:
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
                         _, output = self.engine.get_entity_by_id(collection_name=v.split(' by ')[0][6:].strip(),
                                                                  ids=[int(i.strip()) for i in v.split('=')[1].split(',') if len(i.strip())>0])
                         output = pd.DataFrame(output, columns=['inserted_vector_ids']).to_html()
