@@ -51,7 +51,7 @@ class MilvusKernel(Kernel):
                 if len(l)>0:
                     if l.startswith('milvus://'):
                         self.engine = Milvus(uri=f'tcp://{v[9:]}')
-                    elif l.startswith('help'):
+                    elif l=='help':
                         output = pd.DataFrame(
                             {'description':[
                                 'Create a collection',
@@ -84,6 +84,24 @@ class MilvusKernel(Kernel):
                                  'delete test01 by id=1',
                                  "insert 2,3,5 from test01 where partition_tag='tag01' by id=0",
                                  'select test01 by id=1,2,3',
+                             ]}).to_html()
+                    elif l=='help -metric':
+                        output = pd.DataFrame(
+                            {'description':[
+                                'HAMMING', 'INVALID', 'IP', 'JACCARD', 'L2', 'SUBSTRUCTURE', 'SUPERSTRUCTURE', 'TANIMOTO'
+                            ],
+                             'milvus MetricType':[
+                                 'MetricType.HAMMING', 'MetricType.INVALID', 'MetricType.IP', 'MetricType.JACCARD', 'MetricType.L2', 
+                                 'MetricType.SUBSTRUCTURE', 'MetricType.SUPERSTRUCTURE', 'MetricType.TANIMOTO'
+                             ]}).to_html()
+                    elif l=='help -index':
+                        output = pd.DataFrame(
+                            {'description':[
+                                'IVFLAT', 'ANNOY', 'FLAT', 'HNSW', 'INVALID', 'IVF_PQ', 'IVF_SQ8', 'IVF_SQ8H', 'RNSG'
+                            ],
+                             'milvus IndexType':[
+                                 'IndexType.IVFLAT', 'IndexType.ANNOY', 'IndexType.FLAT', 'IndexType.HNSW', 'IndexType.INVALID', 
+                                 'IndexType.IVF_PQ', 'IndexType.IVF_SQ8', 'IndexType.IVF_SQ8H', 'IndexType.RNSG'
                              ]}).to_html()
                     elif l.startswith('list table'):
                         if not self.engine:
