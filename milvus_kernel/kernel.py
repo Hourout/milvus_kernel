@@ -22,7 +22,7 @@ class MilvusKernel(Kernel):
     def output(self, output):
         if not self.silent:
             display_content = {'source': 'kernel',
-                               'data': {'text/html': output},
+                               'data': {'text/html/dict': output},
                                'metadata': {}}
             self.send_response(self.iopub_socket, 'display_data', display_content)
     
@@ -103,6 +103,21 @@ class MilvusKernel(Kernel):
                                  'IndexType.IVFLAT', 'IndexType.ANNOY', 'IndexType.FLAT', 'IndexType.HNSW', 'IndexType.INVALID', 
                                  'IndexType.IVF_PQ', 'IndexType.IVF_SQ8', 'IndexType.IVF_SQ8H', 'IndexType.RNSG'
                              ]}).to_html()
+                    elif l.startswith('desc '):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
+                        info_col = self.engine.get_collection_info(v[4:].strip())[1]
+                        info_index = self.engine.get_index_info(v[4:].strip())[1]
+                        desc = ['collection_name', 'dimension', 'index_file_size', 'metric_type', 'index_type']+[i for i in info_index.params]
+                        info = [info_col.collection_name, info_col.dimension, info_col.index_file_size, str(info_col.metric_type),
+                                str(info_index.index_type)]+[info_index.params[i] for i in info_index.params]
+                        output = pd.DataFrame({'description': desc, 'info': info}).to_html()
+                    elif l.startswith('stats '):
+                        if not self.engine:
+                            self.output(message)
+                            return self.ok()
+                        output = self.engine.get_collection_stats(v[5:].strip())[1]
                     elif l.startswith('list table'):
                         if not self.engine:
                             self.output(message)
