@@ -227,6 +227,8 @@ class MilvusKernel(Kernel):
                         _, output = self.engine.get_entity_by_id(collection_name=v.split(' by ')[0][6:].strip(),
                                                                  ids=[int(i.strip()) for i in v.split('=')[1].split(',') if len(i.strip())>0])
                         output = pd.DataFrame(output, columns=['inserted_vector_ids']).to_html()
+                    else:
+                        output = 'Milvus SQL Syntax errors, please check SQL Syntax.'
             self.output(output)
             return self.ok()
         except Exception as msg:
