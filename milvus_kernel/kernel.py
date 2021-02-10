@@ -94,7 +94,7 @@ class MilvusKernel(Kernel):
                         if not self.engine:
                             self.output(message)
                             return self.ok()
-                        param = {'collection_name':v.split('where')[0][17:].strip()}
+                        param = {'collection_name':v.split(' where ')[0][12:].strip()}
                         for i in v.split(' where ')[1].split(' and '):
                             param_list = i.split('=')
                             if param_list[0].strip()=='dimension':
@@ -113,11 +113,11 @@ class MilvusKernel(Kernel):
                                     'TANIMOTO': MetricType.TANIMOTO}
                                 param['metric_type'] = metric_type_dict[param_list[1].strip().replace("'", '')]
                         output = self.engine.create_collection(param).message
-                    elif l.startswith('drop collection '):
+                    elif l.startswith('drop table '):
                         if not self.engine:
                             self.output(message)
                             return self.ok()
-                        output = self.engine.drop_collection(collection_name=v[15:].strip()).message
+                        output = self.engine.drop_collection(collection_name=v[10:].strip()).message
                     elif l.startswith('create partition '):
                         if not self.engine:
                             self.output(message)
