@@ -67,7 +67,11 @@ class MilvusKernel(Kernel):
                                 'Search vectors',
                                 'Delete vectors by ID',
                                 'Insert a vector',
-                                'Select vector'
+                                'Select vector',
+                                'View metric type',
+                                'View index type',
+                                'View a collection description',
+                                'View a collection statistics',
                             ],
                              'milvus sql':[
                                  "create table test01 where dimension=128 and index_file_size=1024 and metric_type='L2'",
@@ -84,6 +88,10 @@ class MilvusKernel(Kernel):
                                  'delete test01 by id=1',
                                  "insert 2,3,5 from test01 where partition_tag='tag01' by id=0",
                                  'select test01 by id=1,2,3',
+                                 'help -metric',
+                                 'help -index',
+                                 'desc test01',
+                                 'stats test01',
                              ]}).to_html()
                     elif l=='help -metric':
                         output = pd.DataFrame(
@@ -109,15 +117,22 @@ class MilvusKernel(Kernel):
                             return self.ok()
                         info_col = self.engine.get_collection_info(v[4:].strip())[1]
                         info_index = self.engine.get_index_info(v[4:].strip())[1]
-                        desc = ['collection_name', 'dimension', 'index_file_size', 'metric_type', 'index_type']+[i for i in info_index.params]
-                        info = [info_col.collection_name, info_col.dimension, info_col.index_file_size, str(info_col.metric_type),
+                        desc = (['collection_name', 'dimension', 'index_file_size', 'metric_type', 'index_type']
+                                +[i for i in info_index.params]+['row_count'])
+                        info = ([info_col.collection_name, info_col.dimension, info_col.index_file_size, str(info_col.metric_type),
                                 str(info_index.index_type)]+[info_index.params[i] for i in info_index.params]
+                                +[self.engine.get_collection_stats('test01')[1]['row_count']])
                         output = pd.DataFrame({'description': desc, 'info': info}).to_html()
                     elif l.startswith('stats '):
                         if not self.engine:
                             self.output(message)
                             return self.ok()
-                        output = self.engine.get_collection_stats(v[5:].strip())[1]
+                        temp = pd.DataFrame()
+                        for i in self.engine.get_collection_stats(v[5:].strip())[1]['partitions']:
+                            t = pd.DataFrame(i['segments'])
+                            t['tag'] = i['tag']
+                            temp = pd.concat([temp, t])
+                        output = temp.to_html()
                     elif l.startswith('list table'):
                         if not self.engine:
                             self.output(message)
