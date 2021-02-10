@@ -121,7 +121,7 @@ class MilvusKernel(Kernel):
                                 +[i for i in info_index.params]+['row_count'])
                         info = ([info_col.collection_name, info_col.dimension, info_col.index_file_size, str(info_col.metric_type),
                                 str(info_index.index_type)]+[info_index.params[i] for i in info_index.params]
-                                +[self.engine.get_collection_stats('test01')[1]['row_count']])
+                                +[self.engine.get_collection_stats(v[4:].strip())[1]['row_count']])
                         output = pd.DataFrame({'description': desc, 'info': info}).to_html()
                     elif l.startswith('stats '):
                         if not self.engine:
