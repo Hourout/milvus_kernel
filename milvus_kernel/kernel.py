@@ -3,7 +3,7 @@ from milvus import Milvus, IndexType, MetricType, Status
 from ipykernel.kernelbase import Kernel
 
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 class MilvusKernel(Kernel):
     implementation = 'milvus_kernel'
@@ -70,13 +70,13 @@ class MilvusKernel(Kernel):
                                 'Select vector'
                             ],
                              'milvus sql':[
-                                 'create collection test01 where dimension=128 and index_file_size=1024 and metric_type=L2',
-                                 'drop collection test01',
-                                 'list collections',
-                                 'create partition test01 where partition_tag=tag01',
-                                 'drop partition test01 where partition_tag=tag01',
+                                 "create table test01 where dimension=128 and index_file_size=1024 and metric_type='L2'",
+                                 'drop table test01',
+                                 'list table',
+                                 "create partition test01 where partition_tag='tag01'",
+                                 "drop partition test01 where partition_tag='tag01'",
                                  'list partitions test01',
-                                 'create index test01 where index_type=FLAT and nlist=4096',
+                                 "create index test01 where index_type='FLAT' and nlist=4096",
                                  'drop index test01',
                                  'flush test01, test02',
                                  'compact test01',
@@ -85,12 +85,12 @@ class MilvusKernel(Kernel):
                                  "insert 2,3,5 from test01 where partition_tag='tag01' by id=0",
                                  'select test01 by id=1,2,3',
                              ]}).to_html()
-                    elif l.startswith('list collections'):
+                    elif l.startswith('list table'):
                         if not self.engine:
                             self.output(message)
                             return self.ok()
-                        output = str(self.engine.list_collections()[1])
-                    elif l.startswith('create collection '):
+                        output = pd.DataFrame(self.engine.list_collections()[1], columns=['collections']).to_html()
+                    elif l.startswith('create table '):
                         if not self.engine:
                             self.output(message)
                             return self.ok()
@@ -122,19 +122,20 @@ class MilvusKernel(Kernel):
                         if not self.engine:
                             self.output(message)
                             return self.ok()
-                        output = self.engine.create_partition(collection_name=v.split('where')[0][16:].strip(),
-                                                              partition_tag=v.split('where')[1].split('=')[1].strip()).message
+                        output = self.engine.create_partition(collection_name=v.split(' where ')[0][16:].strip(),
+                                                              partition_tag=v.split(' where ')[1].split('=')[1].strip().replace("'", '')).message
                     elif l.startswith('drop partition '):
                         if not self.engine:
                             self.output(message)
                             return self.ok()
-                        output = self.engine.drop_partition(collection_name=v.split('where')[0][14:].strip(),
-                                                            partition_tag=v.split('where')[1].split('=')[1].strip()).message
+                        output = self.engine.drop_partition(collection_name=v.split(' where ')[0][14:].strip(),
+                                                            partition_tag=v.split(' where ')[1].split('=')[1].strip().replace("'", '')).message
                     elif l.startswith('list partitions '):
                         if not self.engine:
                             self.output(message)
                             return self.ok()
-                        output = str(self.engine.list_partitions(collection_name=v[15:].strip())[1])
+                        output = self.engine.list_partitions(collection_name=v[15:].strip())[1]
+                        output = pd.DataFrame([[i.collection_name, i.tag] for i in output], columns=['collections', 'tag']).to_html()
                     elif l.startswith('create index '):
                         param = {}
                         for i in v.split(' where ')[1].split(' and '):
@@ -153,8 +154,7 @@ class MilvusKernel(Kernel):
                                     'IVF_SQ8H': IndexType.IVF_SQ8H,
                                     'RNSG': IndexType.RNSG}
                                 param['index_type'] = index_type_dict[param_list[1].strip().replace("'", '')]
-                        output = self.engine.create_index(collection_name=v.split(' where ')[0][12:].strip(),
-                                                          params=param).message
+                        output = self.engine.create_index(collection_name=v.split(' where ')[0][12:].strip(), params=param).message
                     elif l.startswith('drop index '):
                         output = self.engine.drop_index(collection_name=v[10:].strip()).message
                     elif l.startswith('compact '):
@@ -172,7 +172,7 @@ class MilvusKernel(Kernel):
                             elif param_list[0].strip()=='partition_tags':
                                 partition_tags = [param_list[1].strip().replace("'", '')]
                             elif param_list[0].strip()=='nprobe':
-                                param = {'nprobe': int(param_list[1].strip())}
+                                params = {'nprobe': int(param_list[1].strip())}
                         query_records = [float(i.strip()) for i in v.split(' from ')[0][6:].split(',') if len(i.strip())>0]
                         output = self.engine.search(collection_name=v.split(' from ')[1].split(' where ')[0],
                                                     top_k=top_k,
@@ -183,7 +183,7 @@ class MilvusKernel(Kernel):
                         output = self.engine.delete_entity_by_id(collection_name=v.split(' by ')[0][6:].strip(),
                                                                  id_array=[int(i.strip()) for i in v.split('=')[1].split(',') if len(i.strip())>0]).message
                     elif l.startswith('insert '):
-                        collection_name = v.split(' from ')[1].split(' ')[0] if ' where ' in l or ' by ' in l else v.split(' from ')[1].strip()
+                        collection_name = v.split(' from ')[1].split(' ')[0].strip() if ' where ' in l or ' by ' in l else v.split(' from ')[1].strip()
                         ids = None
                         partition_tag = None
                         if ' where ' in l:
@@ -198,11 +198,11 @@ class MilvusKernel(Kernel):
                             ids = int(ids.split('=')[1].strip())
                         records = [float(i.strip()) for i in v.split(' from ')[0][6:].split(',') if len(i.strip())>0]
                         _, output = self.engine.insert(collection_name=collection_name, records=records, ids=ids, partition_tag=partition_tag)
-                        output = str(output)
+                        output = pd.DataFrame(output, columns=['inserted_vector_ids']).to_html()
                     elif l.startswith('select ') and ' by ' in l:
                         _, output = self.engine.get_entity_by_id(collection_name=v.split(' by ')[0][6:].strip(),
-                                                              ids=[int(i.strip()) for i in v.split('=')[1].split(',') if len(i.strip())>0])
-                        output = str(output)
+                                                                 ids=[int(i.strip()) for i in v.split('=')[1].split(',') if len(i.strip())>0])
+                        output = pd.DataFrame(output, columns=['inserted_vector_ids']).to_html()
             self.output(output)
             return self.ok()
         except Exception as msg:
