@@ -22,7 +22,7 @@ class MilvusKernel(Kernel):
     def output(self, output):
         if not self.silent:
             display_content = {'source': 'kernel',
-                               'data': {'text/html/json': output},
+                               'data': {'text/html': output},
                                'metadata': {}}
             self.send_response(self.iopub_socket, 'display_data', display_content)
     
